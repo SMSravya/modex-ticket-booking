@@ -1,0 +1,57 @@
+{
+  "info": {
+    "name": "TicketBooking-Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Show",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo Show\",\n  \"start_time\": \"2025-12-11 19:00\",\n  \"total_seats\": 20\n}"
+        },
+        "url": {"raw":"http://localhost:4000/admin/shows","protocol":"http","host":["localhost"],"port":"4000","path":["admin","shows"]}
+      }
+    },
+    {
+      "name": "List Shows",
+      "request": { "method": "GET", "url": {"raw":"http://localhost:4000/shows","protocol":"http","host":["localhost"],"port":"4000","path":["shows"]} }
+    },
+    {
+      "name": "Get Seats",
+      "request": { "method": "GET", "url": {"raw":"http://localhost:4000/shows/1/seats","protocol":"http","host":["localhost"],"port":"4000","path":["shows","1","seats"]} }
+    },
+    {
+      "name": "Create Booking (PENDING)",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode":"raw",
+          "raw":"{\n  \"showId\": 1,\n  \"seats\": [1,2],\n  \"userName\": \"Sravya\"\n}"
+        },
+        "url": {"raw":"http://localhost:4000/book","protocol":"http","host":["localhost"],"port":"4000","path":["book"]}
+      }
+    },
+    {
+      "name": "Confirm Booking",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {"mode":"raw","raw":"{ \"bookingId\": 1 }"},
+        "url":{"raw":"http://localhost:4000/book/confirm","protocol":"http","host":["localhost"],"port":"4000","path":["book","confirm"]}
+      }
+    },
+    {
+      "name": "Get Booking",
+      "request": { "method":"GET", "url":{"raw":"http://localhost:4000/book/1","protocol":"http","host":["localhost"],"port":"4000","path":["book","1"]} }
+    },
+    {
+      "name": "Admin - List Bookings",
+      "request": { "method":"GET", "url":{"raw":"http://localhost:4000/admin/bookings","protocol":"http","host":["localhost"],"port":"4000","path":["admin","bookings"]} }
+    }
+  ]
+}
