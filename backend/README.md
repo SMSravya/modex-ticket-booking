@@ -1,42 +1,21 @@
-# Ticket Booking System - Backend
-
-## Run locally
-
-1. Install dependencies:
-```bash
-cd backend
-npm install
-
-
-
-# ✅ `backend/README.md` (copy-paste this entire file)
-
-```md
-# Ticket Booking System — Backend
+## Ticket Booking System — Backend
 
 **Tech stack:** Node.js, Express, PostgreSQL  
-**Project:** Modex Assessment — Part 1 (Backend)  
-**Author:** Sravya
-
----
+**Project:** Modex Assessment — Backend
 
 ## Overview
 
-This backend implements a concurrency-safe ticket booking system (show/trip/slot management) that prevents overbooking using PostgreSQL transactions and row-level locks. It supports booking lifecycle states: **PENDING**, **CONFIRMED**, **FAILED**, and includes an expiry worker that marks stale PENDING bookings as FAILED after 2 minutes.
+This backend implements a concurrency-safe ticket booking system using PostgreSQL transactions and row-level locks. It supports booking lifecycle states **PENDING**, **CONFIRMED**, and **FAILED**, and includes an expiry worker that marks stale PENDING bookings as FAILED after 2 minutes.
 
-Core features:
-- Admin create shows/trips and auto-populate seats
-- Users list shows and view seat status
+Features:
+- Admin can create shows and auto-populate seats
+- Users can list shows and view seat status
 - Create booking (PENDING) and confirm booking (CONFIRMED)
-- Booking expiry worker (PENDING → FAILED after 2 minutes)
-- Concurrency-safe seat booking using `SELECT ... FOR UPDATE` and transactions
-- Postman collection included for testing
+- Background worker to expire old PENDING bookings
+- Concurrency-safe seat booking with `SELECT ... FOR UPDATE`
+- Postman collection for API testing
 
----
-
-## Repo structure (backend)
-
-```
+## Backend structure
 
 backend/
 server.js
@@ -55,259 +34,183 @@ book.js
 test/
 concurrency.js
 
-````
 
----
 
 ## Prerequisites
 
 - Node.js 18+ and npm  
-- PostgreSQL (local or Docker)  
-- Git (for pushing)  
-- (Optional) Docker (recommended for Postgres local dev)
+- PostgreSQL  
+- Git
 
----
+## Run locally
 
-## Quick start (local)
+1. Clone and enter backend:
 
-1. Clone repo (if not already):
-```bash
 git clone <your-repo-url>
 cd modex-ticket-system/backend
-````
+
+
 
 2. Install dependencies:
 
-```bash
 npm install
-```
 
-3. Configure DB & environment:
 
-* Create Postgres DB and user (example using Docker):
 
-```bash
-docker run --name ticket-postgres -e POSTGRES_USER=dev -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=ticketdb -p 5432:5432 -d postgres:15
-```
+3. Start PostgreSQL and create database (example with Docker):
 
-* Copy schema into DB (option A: docker exec):
+docker run --name ticket-postgres
+-e POSTGRES_USER=dev
+-e POSTGRES_PASSWORD=pass
+-e POSTGRES_DB=ticketdb
+-p 5432:5432 -d postgres:15
 
-```bash
+
+
+4. Apply schema:
+
 docker cp ./schema.sql ticket-postgres:/schema.sql
 docker exec -it ticket-postgres bash -c "psql -U dev -d ticketdb -f /schema.sql"
-```
 
-* Create `.env` in `backend/`:
 
-```
+
+5. Create `.env` in `backend/`:
+
 DATABASE_URL=postgres://dev:pass@localhost:5432/ticketdb
 PORT=4000
-```
 
-4. Start server:
 
-```bash
+
+6. Start API server:
+
 npm run dev
-```
 
-5. In a second terminal start expiry worker:
 
-```bash
+
+7. In another terminal, start the expiry worker:
+
 npm run worker
-```
 
----
 
-## API Reference
 
-Base URL for local testing: `http://localhost:4000`
+## API reference
+
+Base URL (local): `http://localhost:4000`
 
 ### Admin
 
-* **POST /admin/shows** — Create a show (201)
+- **POST `/admin/shows`** — create a show
 
-  * Body:
+Request body:
 
-    ```json
-    {
-      "name": "Avengers Movie",
-      "start_time": "2025-12-11 19:00",
-      "total_seats": 40
-    }
-    ```
-  * Response:
+{
+"name": "Avengers Movie",
+"start_time": "2025-12-11 19:00",
+"total_seats": 40
+}
 
-    ```json
-    { "message": "Show created", "showId": 1 }
-    ```
 
-* **GET /admin/bookings** — List bookings (200)
 
-  * Optional query: `?status=PENDING`
+Example response:
+
+{ "message": "Show created", "showId": 1 }
+
+
+
+- **GET `/admin/bookings`** — list bookings, optional `?status=PENDING`
 
 ### Shows
 
-* **GET /shows** — List shows (200)
-* **GET /shows/:id/seats** — List seats for a show (200)
+- **GET `/shows`** — list shows
+- **GET `/shows/:id/seats`** — list seats for a show
 
-  * Response example:
+Example response:
 
-    ```json
-    [
-      { "id": 11, "seat_number": 1, "status": "AVAILABLE", "booking_id": null },
-      ...
-    ]
-    ```
+[
+{ "id": 11, "seat_number": 1, "status": "AVAILABLE", "booking_id": null }
+]
+
+
 
 ### Booking
 
-* **POST /book** — Create booking (201) — *PENDING*
+- **POST `/book`** — create booking (PENDING)
 
-  * Body:
+{
+"showId": 1,
+"seats":,​​
+"userName": "Alice"
+}
 
-    ```json
-    { "showId": 1, "seats": [1,2], "userName": "Alice" }
-    ```
-  * Response:
 
-    ```json
-    { "message": "Booking created", "bookingId": 5, "status": "PENDING" }
-    ```
 
-* **POST /book/confirm** — Confirm booking (200)
+Response:
 
-  * Body:
+{ "message": "Booking created", "bookingId": 5, "status": "PENDING" }
 
-    ```json
-    { "bookingId": 5 }
-    ```
-  * Response:
 
-    ```json
-    { "message": "Booking confirmed", "bookingId": 5 }
-    ```
 
-* **GET /book/:id** — Get booking & seats (200)
+- **POST `/book/confirm`** — confirm booking
 
-  * Response:
+{ "bookingId": 5 }
 
-    ```json
-    {
-      "booking": { "id":5, "show_id":1, "user_name":"Alice", "status":"CONFIRMED", ... },
-      "seats": [ { "seat_number": 1, "status": "CONFIRMED" }, ... ]
-    }
-    ```
+
+
+Response:
+
+{ "message": "Booking confirmed", "bookingId": 5 }
+
+
+
+- **GET `/book/:id`** — get booking and seats
+
+{
+"booking": { "id": 5, "show_id": 1, "user_name": "Alice", "status": "CONFIRMED" },
+"seats": [
+{ "seat_number": 1, "status": "CONFIRMED" }
+]
+}
+
+
 
 ### Status codes
 
-* `201` — Created (show, booking)
-* `200` — OK
-* `400` — Bad request / validation
-* `404` — Not found
-* `409` — Conflict (seat not available)
-* `500` — Server error
+- 201 — created
+- 200 — success
+- 400 — bad request
+- 404 — not found
+- 409 — conflict (seat not available)
+- 500 — server error
 
----
+## Concurrency behaviour
 
-## Concurrency & consistency
-
-Booking flow:
-
-1. `POST /book` starts a DB transaction and executes:
-
-   * `SELECT ... FOR UPDATE` on requested seat rows (locks them)
-   * validates they are `AVAILABLE`
-   * inserts a bookings row with `status='PENDING'`
-   * updates `seats` rows to `status='PENDING'` and attaches `booking_id`
-   * commits transaction
-
-This ensures atomic seat reservation and prevents multiple transactions from booking the same seat.
-
-To confirm:
-
-* `POST /book/confirm` locks the booking row and updates status to `CONFIRMED` (and seats → `CONFIRMED`).
-
-Expiry:
-
-* Worker `worker/expiry.js` runs every 30 seconds and marks `PENDING` bookings older than 2 minutes as `FAILED`, freeing seats.
-
----
+- `/book` opens a transaction, locks requested seats with `SELECT ... FOR UPDATE`, verifies they are `AVAILABLE`, inserts a booking with `status = PENDING`, updates seats to `PENDING`, then commits.
+- `/book/confirm` locks the booking row, verifies it is `PENDING`, then sets booking and seats to `CONFIRMED`.
+- `worker/expiry.js` periodically marks PENDING bookings older than 2 minutes as `FAILED` and frees their seats.
 
 ## Tests
 
-### Concurrency test
+### Concurrency script
 
-From `backend` folder:
+From `backend/`:
 
-```bash
 node test/concurrency.js
-```
 
-This script sends multiple concurrent booking requests for the same seat to validate locking. Expect only the first to create a booking; others return conflicts.
 
-### Manual test examples (PowerShell)
 
-Create show:
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:4000/admin/shows" -Method POST -Body (@{
-  name = "Demo Show"
-  start_time = "2025-12-11 19:00"
-  total_seats = 10
-} | ConvertTo-Json) -ContentType "application/json"
-```
-
-Create booking:
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:4000/book" -Method POST -Body (@{
-  showId = 1
-  seats = @(1)
-  userName = "TestUser"
-} | ConvertTo-Json) -ContentType "application/json"
-```
-
-Confirm booking:
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:4000/book/confirm" -Method POST -Body (@{
-  bookingId = 1
-} | ConvertTo-Json) -ContentType "application/json"
-```
-
----
+This fires multiple concurrent booking requests for the same seat; only one should succeed.
 
 ## Postman collection
 
-A Postman import file is included: `postman_collection.json`.
-Import it into Postman to quickly run the above requests.
+Import `backend/postman_collection.json` into Postman to run all core requests quickly.
 
----
+## Deployment notes
 
-## Deployment notes (high-level)
+High-level steps for a platform like Render or Railway:
 
-Recommended providers: **Render**, **Railway**, **Heroku** (or AWS/GCP). Steps overview:
-
-1. Create Postgres managed DB (Render/Railway).
-2. Set `DATABASE_URL` env var on the host: `postgres://<user>:<pass>@<host>:<port>/<db>`.
-3. Deploy backend repo (NodeJS). Set `PORT` env var if required.
-4. Run `schema.sql` on the managed DB (use psql or provider SQL editor).
-5. Start backend; start worker as separate process (or use a worker service on the platform).
-6. Configure CORS for the frontend origin.
-
-I will provide detailed Render/Railway instructions in the deployment step.
-
----
-
-## Git & Submission
-
-* Push the `backend/` folder to your public GitHub repo (include `README.md`, `postman_collection.json`, `schema.sql`).
-* Record a short unlisted video showing:
-
-  * Setup & run locally
-  * Create show → Create booking → Confirm booking
-  * Run concurrency test and show results
-  * Show expiry worker marking booking FAILED (2-minute test)
-  * Show deployment steps and live endpoint (if deployed)
-
----
+1. Create a managed PostgreSQL instance.
+2. Set `DATABASE_URL` and `PORT` environment variables for the service.
+3. Deploy the Node.js backend from this repository.
+4. Run `schema.sql` against the managed database.
+5. Run the HTTP server and the expiry worker (as a separate worker service or process).
+6. Configure CORS to allow the deployed frontend origin.
