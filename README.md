@@ -220,6 +220,7 @@ cd backend
 npm run dev # start API locally
 npm run worker # start expiry worker
 node test/concurrency.js # run concurrency test
+https://modex-ticket-booking.onrender.com
 
 
 
@@ -228,6 +229,7 @@ node test/concurrency.js # run concurrency test
 cd frontend
 npm run dev # start Vite dev server
 npm run build # production build
+https://modex-ticket-booking-iuyc.vercel.app/
 
 
 
