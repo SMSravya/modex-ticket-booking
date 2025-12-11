@@ -10,7 +10,7 @@
 
 This is a BookMyShow-style frontend for the Modex Ticket Booking System backend.  
 It provides a user view for browsing shows and booking seats, and an admin view for creating shows and viewing bookings.  
-The app is built with React + TypeScript, uses Context API for global state and caching, and integrates with the concurrency-safe Node.js + PostgreSQL backend.
+The app is built with React + TypeScript, uses Con API for global state and caching, and integrates with the concurrency-safe Node.js + PostgreSQL backend.
 
 Key features:
 
@@ -19,7 +19,7 @@ Key features:
 - User show list with city filter and responsive cards
 - Visual seat selection grid with live availability from backend
 - Booking flow integrated with PENDING → CONFIRMED logic
-- Global Context for shows, selected city, and basic mock user
+- Global Con for shows, selected city, and basic mock user
 - API error handling, loading states, and simple form validation
 
 ---
@@ -35,8 +35,8 @@ App.tsx # Routes
 index.css # Tailwind base
 components/
 AppLayout.tsx # Navbar, city selector, layout shell
-context/
-AppContext.tsx # Context API: currentUser, shows, selectedCity, loaders
+con/
+AppCon.tsx # Con API: currentUser, shows, selectedCity, loaders
 pages/
 HomePage.tsx # User shows list + city filter
 BookingPage.tsx # Seat grid + booking flow
@@ -48,7 +48,7 @@ postcss.config.js
 vite.config.ts
 package.json
 
-text
+
 
 ---
 
@@ -63,7 +63,7 @@ Make sure the backend is running on port `4000` and connected to PostgreSQL (see
 cd frontend
 npm install
 
-text
+
 
 3. **Environment configuration**
 
@@ -71,7 +71,7 @@ The API base URL is configured in `src/config.ts`:
 
 export const API_BASE_URL = "http://localhost:4000";
 
-text
+
 
 For deployment, change this to your deployed backend URL (for example, Render/Railway HTTPS endpoint).
 
@@ -79,7 +79,7 @@ For deployment, change this to your deployed backend URL (for example, Render/Ra
 
 npm run dev
 
-text
+
 
 Vite will print a URL like `http://localhost:5173` (or 5174). Open it in the browser.
 
@@ -115,8 +115,8 @@ Vite will print a URL like `http://localhost:5173` (or 5174). Open it in the bro
 
 ## State management & API usage
 
-- **Context API**
-  - `AppContext` holds:
+- **Con API**
+  - `AppCon` holds:
     - `currentUser` (mock: `{ name: "Guest", role: "USER" }`)
     - `shows`, `loadingShows`, `showsError`
     - `selectedCity`, `setSelectedCity`
@@ -137,7 +137,7 @@ Vite will print a URL like `http://localhost:5173` (or 5174). Open it in the bro
 
 ## Assumptions
 
-- Authentication is mocked via a simple `currentUser` object in context; there is no real login.
+- Authentication is mocked via a simple `currentUser` object in con; there is no real login.
 - City selection is implemented on the frontend only:
   - `types/showExtras.ts` maps `showId → city`.
   - Backend schema is unchanged; all shows are fetched and then filtered client-side.
@@ -156,15 +156,6 @@ Vite will print a URL like `http://localhost:5173` (or 5174). Open it in the bro
 
 ---
 
-## Screenshots
-
-Add screenshots or a short GIF of:
-
-- Home page with show cards and city selector.
-- Booking page with seat layout.
-- Admin dashboard (create show + bookings table).
-
----
 
 ## Deployment notes (summary)
 
@@ -176,3 +167,8 @@ Add screenshots or a short GIF of:
   - Home loads shows from the deployed backend.
   - Admin can create shows.
   - Booking flow works end-to-end in production.
+
+
+
+  backend deployed - https://modex-ticket-booking.onrender.com
+  frontend deployed - https://modex-ticket-booking-iuyc.vercel.app/admin
